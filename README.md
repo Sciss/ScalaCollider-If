@@ -79,6 +79,9 @@ supported.
 Classes are placed in the conventional `de.sciss.synth` package,
 matching with the other types and UGens of ScalaCollider.
 
+For more background information and design considerations,
+see the [sysson-experiments Project](https://github.com/iem-projects/sysson-experiments/releases/tag/if-then-else).
+
 ## limitations
 
 - currently, `ControlProxy` elements do not properly propagate from

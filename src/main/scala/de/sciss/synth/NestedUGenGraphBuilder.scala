@@ -14,6 +14,7 @@
 
 package de.sciss.synth
 
+import de.sciss.{osc, synth}
 import de.sciss.synth.Ops.stringToControl
 import de.sciss.synth.impl.BasicUGenGraphBuilder
 import de.sciss.synth.ugen.impl.BranchOut
@@ -23,6 +24,72 @@ import scala.annotation.{elidable, tailrec}
 import scala.collection.immutable.{IndexedSeq => Vec, Set => ISet}
 
 object NestedUGenGraphBuilder {
+  /** Takes a builder result and prepares playback by constructing
+    * an OSC bundle with all the required synth-defs, groups, synths,
+    * and controls.
+    *
+    * @param res0   the top result to play
+    * @param s      the server on which to play
+    * @param args   additional synth control args
+    *
+    * @return a tuple formed of the OSC bundle ready to be sent, and the main
+    *         node which can be used for further control, `free()` etc.
+    */
+  def prepare(res0: Result, s: Server, args: List[ControlSet] = Nil): (osc.Bundle, synth.Node) = {
+    var defs  = List.empty[SynthDef]
+    var defSz = 0   // used to create unique def names
+    var msgs  = List.empty[osc.Message] // synchronous
+    var ctl   = args.reverse  // init
+    var buses = List.empty[Bus]
+
+    def loop(child: NestedUGenGraphBuilder.Result, parent: Group, addAction: AddAction): Node = {
+      val name        = s"test-$defSz"
+      val sd          = SynthDef(name, child.graph)
+      defs          ::= sd
+      defSz          += 1
+      val syn         = Synth(s)
+      val hasChildren = child.children.nonEmpty
+      val group       = if (!hasChildren) parent else {
+        val g   = Group(s)
+        msgs  ::= g.newMsg(parent, addAction)
+        g
+      }
+      val node  = if (hasChildren) group else syn
+      msgs ::= syn.newMsg(name, target = group, addAction = if (hasChildren) addToHead else addAction)
+
+      child.children.foreach { cc =>
+        val ccn = loop(cc, group, addToTail)
+        if (cc.id >= 0) ctl ::= NestedUGenGraphBuilder.pauseNodeCtlName(cc.id) -> ccn.id
+      }
+
+      child.links.foreach { link =>
+        val bus = link.rate match {
+          case `audio`    => Bus.audio  (s, numChannels = link.numChannels)
+          case `control`  => Bus.control(s, numChannels = link.numChannels)
+          case other      => throw new IllegalArgumentException(s"Unsupported link rate $other")
+        }
+        buses ::= bus
+        ctl   ::= NestedUGenGraphBuilder.linkCtlName(link.id) -> bus.index
+      }
+
+      node
+    }
+
+    val mainNode = loop(res0, parent = s.defaultGroup, addAction = addToHead)
+    mainNode.onEnd {
+      buses.foreach(_.free())
+    }
+
+    msgs ::= mainNode.setMsg(ctl.reverse: _*)
+    msgs ::= synth.message.SynthDefFree(defs.map(_.name): _*)
+
+    val b1 = osc.Bundle.now(msgs.reverse: _*)
+    val defL :: defI = defs
+    val async = defL.recvMsg(b1) :: defI.map(_.recvMsg)
+    val b2 = osc.Bundle.now(async.reverse: _*)
+
+    (b2, mainNode)
+  }
 
   /** Links denote buses between parent and child nodes.
     *
