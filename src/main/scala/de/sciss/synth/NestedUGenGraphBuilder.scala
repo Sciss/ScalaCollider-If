@@ -240,10 +240,13 @@ object NestedUGenGraphBuilder {
     def thisExpIfCase: Option[ExpIfCase]
 
     // ---- impl ----
+    // N.B. some `private[this]` had to be changed to `private`
+    // because otherwise scalac 2.10.6 crashes
 
     protected final var _children = List.empty[Result]    // "reverse-sorted"
     protected final var _links    = List.empty[Link]      // "reverse-sorted"
-    private[this] var expIfTops   = List.empty[ExpIfTop]  // "reverse-sorted"; could be a Set but prefer determinism
+
+    private /* [this] */ var expIfTops   = List.empty[ExpIfTop]  // "reverse-sorted"; could be a Set but prefer determinism
 
     private[this] var sources         = Vec.empty[Lazy]
     private[this] var controlProxies  = ISet.empty[ControlProxyLike]
@@ -335,7 +338,7 @@ object NestedUGenGraphBuilder {
 
     // ---- internal ----
 
-    private[this] var linkMap = Map.empty[AnyRef, Link]
+    private /* [this] */ var linkMap = Map.empty[AnyRef, Link]
 
     final def tryRefer(ref: AnyRef): Option[UGenInLike] =
       sourceMap.get(ref).collect {
