@@ -46,7 +46,7 @@ class NestedSuite extends AsyncFlatSpec with Matchers {
   def assertSameSignal(a: Array[Float], b: Array[Float], tol: Float = 1.0e-4f) = {
     assert(a.length === b.length +- 64)
     val diff = (a, b).zipped.map((x, y) => math.abs(x - y))
-    all (diff) should be < tolgit c
+    all (diff) should be < tol
   }
 
   trait Rendering {
