@@ -14,11 +14,11 @@
 
 package de.sciss.synth
 
-import de.sciss.{osc, synth}
 import de.sciss.synth.Ops.stringToControl
-import de.sciss.synth.impl.BasicUGenGraphBuilder
+import de.sciss.synth.impl.{BasicUGenGraphBuilder, UGenGraphBuilderLike}
 import de.sciss.synth.ugen.impl.BranchOut
-import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlDur, ControlProxyLike, Delay1, DelayN, Done, ElseGE, ElseOrElseIfThen, IfThenLike, Impulse, In, OneZero, Out, Schmidt, SetResetFF, Then, ToggleFF, Trig1, UnaryOpUGen}
+import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlProxyLike, Done, ElseGE, ElseOrElseIfThen, IfThenLike, In, OneZero, Out, Schmidt, SetResetFF, Then, ToggleFF, Trig1, UnaryOpUGen}
+import de.sciss.{osc, synth}
 
 import scala.annotation.{elidable, tailrec}
 import scala.collection.immutable.{IndexedSeq => Vec, Set => ISet}
@@ -108,7 +108,7 @@ object NestedUGenGraphBuilder {
     * the lag time (if any), the identifier of the result bus,
     * and the number of channels (after the children have been expanded).
     */
-  final class ExpIfTop(val lagTime: GE, val selBranchId: Int) {
+  private[synth] final class ExpIfTop(val lagTime: GE, val selBranchId: Int) {
     val hasLag      = lagTime != Constant.C0
     var branchCount = 0
     var branches    = List.empty[ExpIfCase]
@@ -123,7 +123,7 @@ object NestedUGenGraphBuilder {
     * and the top structure, a bit-mask for the sum of the preceding cases
     * and the index of this branch (counting from zero as the first case).
     */
-  final class ExpIfCase(val peer: Then[Any], val pred: Option[ExpIfCase], val top: ExpIfTop,
+  private[synth] final class ExpIfCase(val peer: Then[Any], val pred: Option[ExpIfCase], val top: ExpIfTop,
                         val predMask: Int, val branchIdx: Int) {
     /** If true, the return signal of this branch is requested. */
     var resultUsed = false
@@ -177,11 +177,11 @@ object NestedUGenGraphBuilder {
   }
 
   /** Control for communicating the node index of a child, needed for pausing it from a parent node. */
-  def pauseNodeCtlName(id: Int): String =
+  private[synth] def pauseNodeCtlName(id: Int): String =
     s"$$if$id" // e.g. first if block third branch is `$if0_2n`
 
   /** Single control for setting the bus index of a `Link`. */
-  def linkCtlName(id: Int): String =
+  private[synth] def linkCtlName(id: Int): String =
     s"$$ln$id"
 
   private def isBinary(in: GE): Boolean = {
@@ -227,19 +227,22 @@ object NestedUGenGraphBuilder {
     - handle controls over boundaries
 
    */
-  private trait Impl extends NestedUGenGraphBuilder with SynthGraph.Builder {
+  trait Basic extends NestedUGenGraphBuilder with BasicUGenGraphBuilder with SynthGraph.Builder {
     builder =>
 
     // ---- abstract ----
 
-    def outer: OuterImpl
-    def parent: Impl
-    def childId: Int
+    def outer: Outer
+    protected def parent: Basic
+    protected def childId: Int
 
     /** Corresponding if-case or `None` if not part of an if-block. */
-    def thisExpIfCase: Option[ExpIfCase]
+    protected def thisExpIfCase: Option[ExpIfCase]
+
+    protected def mkInner(childId: Int, thisExpIfCase: Option[ExpIfCase], parent: Basic, name: String): Inner
 
     // ---- impl ----
+
     // N.B. some `private[this]` had to be changed to `private`
     // because otherwise scalac 2.10.6 crashes
 
@@ -291,7 +294,7 @@ object NestedUGenGraphBuilder {
             case _: ElseGE =>
               // XXX TODO --- what to do with the damn control proxies?
               val graphC    = SynthGraph(sources = _sources.drop(i + 1), controlProxies = ctlProxiesCpy)
-              val child     = new InnerImpl(childId = -1, thisExpIfCase = None, parent = builder, name = "continue")
+              val child     = mkInner(childId = -1, thisExpIfCase = None, parent = builder, name = "continue")
               // WARNING: call `.build` first before prepending to `_children`,
               // because _children might be updated during `.build` now.
               // Thus _not_ `_children = _children :: child.build(graphC)`!
@@ -535,12 +538,18 @@ object NestedUGenGraphBuilder {
         }
 
         // now call `UGenGraph.use()` with a child builder, and expand `graphBranch`
-        val child   = new InnerImpl(childId = childId, thisExpIfCase = Some(c),
+        val child   = mkInner(childId = childId, thisExpIfCase = Some(c),
           parent = builder, name = s"inner{if $resultLinkId case ${c.branchIdx}")
         val childRes = child.build(graphBranch)
         _children ::= childRes
       }
     }
+  }
+
+  private sealed trait Impl extends Basic {
+    final protected def mkInner(childId: Int, thisExpIfCase: Option[ExpIfCase], parent: Basic,
+                                name: String): Inner =
+      new InnerImpl(childId = childId, thisExpIfCase = thisExpIfCase, parent = parent, name = name)
   }
 
   private def smartRef(ref: AnyRef): String = {
@@ -559,14 +568,23 @@ object NestedUGenGraphBuilder {
   }
 
   private final class InnerImpl(val childId: Int, val thisExpIfCase: Option[ExpIfCase],
-                                val parent: Impl, name: String)
-    extends Impl {
+                                val parent: Basic, protected val name: String)
+    extends Inner with Impl
 
-    def outer: OuterImpl = parent.outer
+  trait Inner
+    extends Basic {
+
+    // ---- abstract ----
+
+    protected def name: String
+
+    // ---- impl ----
+
+    final def outer: Outer = parent.outer
 
     override def toString = name
 
-    override def visit[U](ref: AnyRef, init: => U): U = visit1[U](ref, () => init)
+    override final def visit[U](ref: AnyRef, init: => U): U = visit1[U](ref, () => init)
 
     private def visit1[U](ref: AnyRef, init: () => U): U = {
       // log(s"visit  ${ref.hashCode.toHexString}")
@@ -583,27 +601,29 @@ object NestedUGenGraphBuilder {
     }
   }
 
-  private final class OuterImpl extends Impl {
+  private final class OuterImpl extends Outer with Impl
+
+  trait Outer extends Basic {
     builder =>
 
-    def outer: OuterImpl  = this
-    def parent: Impl      = this
-    def thisExpIfCase     = None: Option[ExpIfCase]
+    final def outer: Outer  = this
+    final def parent: Basic      = this
+    final def thisExpIfCase     = None: Option[ExpIfCase]
 
-    def childId           = -1
+    final def childId           = -1
 
     override def toString = "outer"
 
     private[this] var idCount = 0
 
     /** Allocates a unique increasing identifier. */
-    def allocId(): Int = {
+    final def allocId(): Int = {
       val res = idCount
       idCount += 1
       res
     }
 
-    override def visit[U](ref: AnyRef, init: => U): U = {
+    override final def visit[U](ref: AnyRef, init: => U): U = {
       log(this, s"visit  ${smartRef(ref)}")
       sourceMap.getOrElse(ref, {
         log(this, s"expand ${smartRef(ref)}...")
@@ -620,9 +640,9 @@ object NestedUGenGraphBuilder {
     case _        => x.toString
   }
 
-  var showLog = false
+  final var showLog = false
 
-  @elidable(elidable.CONFIG) private def log(builder: Impl, what: => String): Unit =
+  @elidable(elidable.CONFIG) private def log(builder: Basic, what: => String): Unit =
     if (showLog) println(s"ScalaCollider-DOT <${builder.toString}> $what")
 }
 
@@ -630,10 +650,8 @@ object NestedUGenGraphBuilder {
   * the `If-ElseIf-Then-Else` elements, building not a single
   * graph but a tree of related graphs.
   */
-trait NestedUGenGraphBuilder extends BasicUGenGraphBuilder {
+trait NestedUGenGraphBuilder extends UGenGraph.Builder {
   import NestedUGenGraphBuilder.ExpIfCase
-
-  protected def build(controlProxies: Iterable[ControlProxyLike]): UGenGraph
 
   /** Returns gate that is open when this if branch is selected. */
   def thisBranch: GE
