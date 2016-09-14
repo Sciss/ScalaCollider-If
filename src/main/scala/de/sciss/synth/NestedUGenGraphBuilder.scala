@@ -15,7 +15,7 @@
 package de.sciss.synth
 
 import de.sciss.synth.Ops.stringToControl
-import de.sciss.synth.impl.{BasicUGenGraphBuilder, UGenGraphBuilderLike}
+import de.sciss.synth.impl.BasicUGenGraphBuilder
 import de.sciss.synth.ugen.impl.BranchOut
 import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlProxyLike, Done, ElseGE, ElseOrElseIfThen, IfThenLike, In, OneZero, Out, Schmidt, SetResetFF, Then, ToggleFF, Trig1, UnaryOpUGen}
 import de.sciss.{osc, synth}
