@@ -18,7 +18,7 @@ import de.sciss.{osc, synth}
 import de.sciss.synth.Ops.stringToControl
 import de.sciss.synth.impl.BasicUGenGraphBuilder
 import de.sciss.synth.ugen.impl.BranchOut
-import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlProxyLike, Delay1, ElseGE, ElseOrElseIfThen, IfThenLike, Impulse, In, Out, Then, UnaryOpUGen}
+import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlProxyLike, Delay1, Done, ElseGE, ElseOrElseIfThen, IfThenLike, Impulse, In, Out, Schmidt, SetResetFF, Then, ToggleFF, Trig1, UnaryOpUGen}
 
 import scala.annotation.{elidable, tailrec}
 import scala.collection.immutable.{IndexedSeq => Vec, Set => ISet}
@@ -196,7 +196,7 @@ object NestedUGenGraphBuilder {
         else if (opi >= BitAnd.id && opi <= BitXor.id) isBinary(a) && isBinary(b)
         else false
 
-      case UnaryOpUGen(UnaryOpUGen.Not, _) => true
+      case UnaryOpUGen(UnaryOpUGen.Not, _) | _: ToggleFF | _: SetResetFF | _: Trig1 | _: Schmidt | _: Done => true
       case _ => false
     }
   }

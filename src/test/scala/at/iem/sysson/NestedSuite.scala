@@ -15,36 +15,66 @@ import scala.concurrent.{Await, Future, blocking}
 import scala.util.Try
 
 class NestedSuite extends AsyncFlatSpec with Matchers {
-  "A synth graph with a sine oscillator" should "produce the predicted sound output" in {
-    val freq = 441.0
+  val sr        = 44100
+  val blockSize = 64
+  val freq      = 441.0
 
+  "A synth graph with a sine oscillator" should "produce the predicted sound output" in {
     val g = SynthGraph {
       import synth._
       import ugen._
       Out.ar(0, SinOsc.ar(freq))
     }
 
-    val sr    = 44100
     val r     = render(g, sampleRate = sr)
     val len   = 1024  // should be on block boundary!
     r.send(len, r.node.freeMsg)
     r.run().map { arr =>
       val arr0  = arr(0)
-      val twoPi = 2 * math.Pi
-      val freqN = twoPi * freq / sr
-      // SinOsc drops first sample. Hallo! SuperCollider!
-      val man   = Array.tabulate(len)(i => math.sin((i + 1) * freqN).toFloat)
+      val man   = mkSine(freq, 0, len)
       assertSameSignal(arr0, man)
     }
   }
 
-//  it should "..." in {
-//  }
+  "A synth graph with an unit result If Then" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 5)
+      val ff    = ToggleFF.kr(tr)
+      If (ff) Then {
+        Out.ar(0, SinOsc.ar(freq))
+      }
+    }
 
-  // ------------------------------- infra
+    val r     = render(g, sampleRate = sr, blockSize = blockSize)
+    val len   = blockSize * 20
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0  = arr(0)
+      // println(arr0.mkString("Vector(", ",", ")"))
+      val period = blockSize * 5
+      // second sine start-frame is `period` not `2 * period` because it was (hopefully) paused!
+      val man   =
+        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+      assertSameSignal(arr0, man)
+    }
+  }
+
+  def mkSine(freq: Double, startFrame: Int, len: Int): Array[Float] = {
+    // SinOsc drops first sample. Hello SuperCollider!
+    val off   = startFrame + 1
+    val freqN = 2 * math.Pi * freq / sr
+    Array.tabulate(len)(i => math.sin((off + i) * freqN).toFloat)
+  }
+
+  def mkSilent(len: Int): Array[Float] = new Array[Float](len)
+
+  // ------------------------- infra -------------------------
 
   def assertSameSignal(a: Array[Float], b: Array[Float], tol: Float = 1.0e-4f) = {
-    assert(a.length === b.length +- 64)
+    assert(a.length === b.length +- blockSize)
     val diff = (a, b).zipped.map((x, y) => math.abs(x - y))
     all (diff) should be < tol
   }
