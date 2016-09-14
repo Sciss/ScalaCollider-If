@@ -4,6 +4,7 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 
 import de.sciss.file._
+import de.sciss.numbers
 import de.sciss.synth.io.AudioFile
 import de.sciss.synth.{NestedUGenGraphBuilder, Server, SynthGraph, addToHead}
 import de.sciss.{osc, synth}
@@ -25,13 +26,18 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
     println(arr.mkString("Vector(", ",", ")"))
 
   final def mkSine(freq: Double, startFrame: Int, len: Int, sampleRate: Double = sampleRate): Array[Float] = {
-    // SinOsc drops first sample. Hello SuperCollider!
-    val off   = startFrame + 1
     val freqN = 2 * math.Pi * freq / sampleRate
-    Array.tabulate(len)(i => math.sin((off + i) * freqN).toFloat)
+    Array.tabulate(len)(i => math.sin((startFrame + i) * freqN).toFloat)
   }
 
   final def mkConstant(value: Float, len: Int): Array[Float] = Array.fill(len)(value)
+
+  /** If `lineLen` is zero (default), it will be set to `len`. */
+  final def mkLine(len: Int, start: Float = 0f, end: Float = 1f, startFrame: Int = 0, lineLen: Int = 0): Array[Float] = {
+    val lineLen0 = if (lineLen == 0) len else lineLen
+    import numbers.Implicits._
+    Array.tabulate(len)(i => (i + startFrame).clip(0, lineLen0).linlin(0, lineLen0, start, end))
+  }
 
   final def mkSilent(len: Int): Array[Float] = new Array(len)
 

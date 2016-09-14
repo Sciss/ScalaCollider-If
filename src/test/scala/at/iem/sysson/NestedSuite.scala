@@ -3,6 +3,10 @@ package at.iem.sysson
 import de.sciss.synth
 import de.sciss.synth.SynthGraph
 
+/** This has been tested with SuperCollider server 3.7.0 on Linux.
+  *
+  * Not yet tested: nested `BranchIf`
+  */
 class NestedSuite extends SuperColliderSpec {
   val freq = 441.0
 
@@ -18,7 +22,7 @@ class NestedSuite extends SuperColliderSpec {
     r.send(len, r.node.freeMsg)
     r.run().map { arr =>
       val arr0  = arr(0)
-      val man   = mkSine(freq, 0, len)
+      val man   = mkSine(freq, 1, len)
       assertSameSignal(arr0, man)
     }
   }
@@ -43,8 +47,8 @@ class NestedSuite extends SuperColliderSpec {
       val period = blockSize * 5
       // second sine start-frame is `period` not `2 * period` because it was (hopefully) paused!
       val man   =
-        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
-        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+        mkSine(freq = freq, startFrame = 1         , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period + 1, len = period) ++ mkSilent(period)
       assertSameSignal(arr0, man)
     }
   }
@@ -70,11 +74,11 @@ class NestedSuite extends SuperColliderSpec {
       val arr1  = arr(1)
       val period = blockSize * 5
       val man0  =
-        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
-        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+        mkSine(freq = freq, startFrame = 1        , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period + 1, len = period) ++ mkSilent(period)
       val man1  =
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 1         , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period + 1, len = period)
       assertSameSignal(arr0, man0)
       assertSameSignal(arr1, man1)
     }
@@ -101,11 +105,11 @@ class NestedSuite extends SuperColliderSpec {
       val arr1  = arr(1)
       val period = blockSize * 5
       val man0  =
-        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
-        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+        mkSine(freq = freq, startFrame = 1         , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period + 1, len = period) ++ mkSilent(period)
       val man1  =
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 1         , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period + 1, len = period)
       assertSameSignal(arr0, man0)
       assertSameSignal(arr1, man1)
     }
@@ -136,11 +140,11 @@ class NestedSuite extends SuperColliderSpec {
       val arr1  = arr(1)
       val period = blockSize * 5
       val man0  =
-        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
-        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+        mkSine(freq = freq, startFrame = 1         , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period + 1, len = period) ++ mkSilent(period)
       val man1  =
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 1         , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period + 1, len = period)
       assertSameSignal(arr0, man0)
       assertSameSignal(arr1, man1)
     }
@@ -184,11 +188,11 @@ class NestedSuite extends SuperColliderSpec {
       val period = blockSize * 5
       // crazy init states of SinOsc; now we do _not_ have to delay by one sample
       val man0  =
-        mkSine(freq = freq    , startFrame =  0, len = period) ++ mkSilent(period) ++
-        mkSine(freq = freq * 3, startFrame = -1, len = period) ++ mkSilent(period)
+        mkSine(freq = freq    , startFrame = 1, len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq * 3, startFrame = 0, len = period) ++ mkSilent(period)
       val man1  =
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
-        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 1         , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period + 1, len = period)
       // printVector(arr0)
       assertSameSignal(arr0, man0)
       assertSameSignal(arr1, man1)
@@ -226,6 +230,53 @@ class NestedSuite extends SuperColliderSpec {
       val man1  = silent ++ spike  ++ silent ++ spike
       // printVector(arr0)
       // printVector(arr1)
+      assertSameSignal(arr0, man0)
+      assertSameSignal(arr1, man1)
+    }
+  }
+
+  "A synth graph with an IfLag block" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 15)
+      val ff    = ToggleFF.kr(tr)
+      val dur   = (blockSize * 5) / sampleRate
+      val res   = IfLag (ff, dur) Then {
+        val gate  = ThisBranch()
+        val env   = EnvGen.ar(Env.asr(attack = dur, release = dur, curve = Curve.lin), gate)
+        Seq(env, DC.ar(0)): GE
+      } Else {
+        val gate  = ThisBranch()
+        val env   = EnvGen.ar(Env.asr(attack = dur, release = dur, curve = Curve.lin), gate)
+        Seq(DC.ar(0), env): GE
+      }
+      Out.ar(0, res)
+    }
+
+    val r       = render(g, numChannels = 2)
+    val segm    = blockSize * 5
+    val period  = segm * 3
+    val len     = period * 4 + segm
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0    = arr(0)
+      val arr1    = arr(1)
+      // note: because the first ever activated branch does not
+      // have to wait for the previous branch to fade out, it
+      // actually has a longer sustain period
+      // (see SysSon technical report Sep 2016).
+      val env0    = mkLine(segm, start = 0f, end = 1f, startFrame = 1) ++ mkConstant(1f, segm * 2) ++
+                    mkLine(segm, start = 1f, end = 0f)
+      val env     = mkLine(segm, start = 0f, end = 1f)                 ++ mkConstant(1f, segm)     ++
+                    mkLine(segm, start = 1f, end = 0f)
+      val silent  = mkSilent(period)
+      val silent0 = mkSilent(period + segm)
+      val man0  = env0    ++ silent ++ env    ++ silent
+      val man1  = silent0 ++ env    ++ silent ++ env
+//      printVector(man0)
+//      printVector(arr0)
+//      printVector(arr1)
       assertSameSignal(arr0, man0)
       assertSameSignal(arr1, man1)
     }
