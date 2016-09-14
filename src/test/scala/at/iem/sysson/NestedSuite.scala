@@ -1,23 +1,10 @@
 package at.iem.sysson
 
-import java.io.RandomAccessFile
-import java.nio.ByteBuffer
+import de.sciss.synth
+import de.sciss.synth.SynthGraph
 
-import de.sciss.file._
-import de.sciss.osc.Message
-import de.sciss.synth.io.AudioFile
-import de.sciss.synth.{NestedUGenGraphBuilder, Server, SynthGraph, addToHead}
-import de.sciss.{osc, synth}
-import org.scalatest.{AsyncFlatSpec, FutureOutcome, Matchers}
-
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, blocking}
-import scala.util.Try
-
-class NestedSuite extends AsyncFlatSpec with Matchers {
-  val sr        = 44100
-  val blockSize = 64
-  val freq      = 441.0
+class NestedSuite extends SuperColliderSpec {
+  val freq = 441.0
 
   "A synth graph with a sine oscillator" should "produce the predicted sound output" in {
     val g = SynthGraph {
@@ -26,7 +13,7 @@ class NestedSuite extends AsyncFlatSpec with Matchers {
       Out.ar(0, SinOsc.ar(freq))
     }
 
-    val r     = render(g, sampleRate = sr)
+    val r     = render(g)
     val len   = 1024  // should be on block boundary!
     r.send(len, r.node.freeMsg)
     r.run().map { arr =>
@@ -47,7 +34,7 @@ class NestedSuite extends AsyncFlatSpec with Matchers {
       }
     }
 
-    val r     = render(g, sampleRate = sr, blockSize = blockSize)
+    val r     = render(g)
     val len   = blockSize * 20
     r.send(len, r.node.freeMsg)
     r.run().map { arr =>
@@ -62,105 +49,147 @@ class NestedSuite extends AsyncFlatSpec with Matchers {
     }
   }
 
-  def mkSine(freq: Double, startFrame: Int, len: Int): Array[Float] = {
-    // SinOsc drops first sample. Hello SuperCollider!
-    val off   = startFrame + 1
-    val freqN = 2 * math.Pi * freq / sr
-    Array.tabulate(len)(i => math.sin((off + i) * freqN).toFloat)
-  }
-
-  def mkSilent(len: Int): Array[Float] = new Array[Float](len)
-
-  // ------------------------- infra -------------------------
-
-  def assertSameSignal(a: Array[Float], b: Array[Float], tol: Float = 1.0e-4f) = {
-    assert(a.length === b.length +- blockSize)
-    val diff = (a, b).zipped.map((x, y) => math.abs(x - y))
-    all (diff) should be < tol
-  }
-
-  trait Rendering {
-    def node: synth.Node
-    def send(frame: Long, message: osc.Message): Unit
-    def run(): Future[Array[Array[Float]]]
-  }
-
-  def render(g: SynthGraph, numChannels: Int = 1, sampleRate: Int = 44100, blockSize: Int = 64,
-             timeOut: Duration = 20.seconds): Rendering = {
-    val s       = Server.dummy()
-    val ug      = NestedUGenGraphBuilder.build(g)
-    val (b, n)  = NestedUGenGraphBuilder.prepare(ug, s)
-
-    new Rendering {
-      var bundles = b :: osc.Bundle.now(s.defaultGroup.newMsg(s.rootNode, addToHead)) :: Nil
-      val node    = n
-
-      def lastSec: Double = bundles.head.timetag.toSecs
-
-      def send(frame: Long, message: Message): Unit = {
-        val sec = frame.toDouble / sampleRate
-        if (sec < lastSec)
-          throw new IllegalArgumentException(s"Time tags must be monotonously increasing ($sec < $lastSec)")
-        bundles ::= osc.Bundle.secs(sec, message)
+  "A synth graph with an unit result If Then ElseIf Then" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 5)
+      val ff    = ToggleFF.kr(tr)
+      If (ff) Then {
+        Out.ar(0, SinOsc.ar(freq))
+      } ElseIf (!ff) Then {
+        Out.ar(1, SinOsc.ar(freq))
       }
+    }
 
-      import scala.concurrent.ExecutionContext.Implicits.global
-
-      def run(): Future[Array[Array[Float]]] = Future {
-        val nrtCmdF = blocking(File.createTemp(suffix = ".osc"))
-        val nrtOutF = blocking(File.createTemp(suffix = ".aif"))
-
-        blocking {
-          val nrtCmdR = new RandomAccessFile(nrtCmdF, "rw")
-          val nrtCmdC = nrtCmdR.getChannel
-          val bb      = ByteBuffer.allocate(65536)
-          val c       = osc.PacketCodec().scsynth().build
-          bundles.reverse.foreach { bndl =>
-            bb.clear()
-            bb.putInt(0)
-            bndl.encode(c, bb)
-            bb.flip()
-            bb.putInt(0, bb.limit() - 4)
-            nrtCmdC.write(bb)
-          }
-          nrtCmdR.close()
-        }
-
-        val config                = Server.Config()
-        config.sampleRate         = sampleRate
-        config.blockSize          = blockSize
-        config.inputBusChannels   = 0
-        config.outputBusChannels  = numChannels
-        config.nrtCommandPath     = nrtCmdF.path
-        config.nrtOutputPath      = nrtOutF.path
-        val proc = Server.renderNRT(dur = lastSec, config = config)
-        proc.start()
-
-        Await.result(proc, timeOut)
-
-        blocking {
-          val af = AudioFile.openRead(nrtOutF)
-          try {
-            require(af.numFrames < 0x7FFFFFFF)
-            val res = af.buffer(af.numFrames.toInt)
-            af.read(res)
-            res
-
-          } finally {
-            af.close()
-          }
-        }
-      }
+    val r     = render(g, numChannels = 2)
+    val len   = blockSize * 20
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0  = arr(0)
+      val arr1  = arr(1)
+      val period = blockSize * 5
+      val man0  =
+        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+      val man1  =
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+      assertSameSignal(arr0, man0)
+      assertSameSignal(arr1, man1)
     }
   }
 
-  override def withFixture(test: NoArgAsyncTest): FutureOutcome = {
-    import sys.process._
-    val scOk = Try(Seq("scsynth", "-v").!!).getOrElse("").startsWith("scsynth ")
-    if (scOk) {
-      test()
-    } else {
-      FutureOutcome.canceled("scsynth (SuperCollider) not found. Skipping test!")
+  "A synth graph with an unit result If Then Else" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 5)
+      val ff    = ToggleFF.kr(tr)
+      If (ff) Then {
+        Out.ar(0, SinOsc.ar(freq))
+      } Else {
+        Out.ar(1, SinOsc.ar(freq))
+      }
+    }
+
+    val r     = render(g, numChannels = 2)
+    val len   = blockSize * 20
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0  = arr(0)
+      val arr1  = arr(1)
+      val period = blockSize * 5
+      val man0  =
+        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+      val man1  =
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+      assertSameSignal(arr0, man0)
+      assertSameSignal(arr1, man1)
+    }
+  }
+
+  // this actually also tests propagation of signals (`fr`) from top to children
+  "A synth graph with an GE result If Then Else" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 5)
+      val ff    = ToggleFF.kr(tr)
+      val fr    = DC.ar(freq)
+      val one   = fr / fr   // make sure `fr` is used in the outer scope
+      val res   = If (ff) Then {
+        Seq(SinOsc.ar(fr), DC.ar(0)): GE
+      } Else {
+        Seq(DC.ar(0), SinOsc.ar(fr)): GE
+      }
+      Out.ar(0, res * one)
+    }
+
+    val r     = render(g, numChannels = 2)
+    val len   = blockSize * 20
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0  = arr(0)
+      val arr1  = arr(1)
+      val period = blockSize * 5
+      val man0  =
+        mkSine(freq = freq, startFrame = 0     , len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq, startFrame = period, len = period) ++ mkSilent(period)
+      val man1  =
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+      assertSameSignal(arr0, man0)
+      assertSameSignal(arr1, man1)
+    }
+  }
+
+  // this actually also tests non-binary conditional signals
+  "A synth graph with nested If blocks" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 5)
+      // it will output 1, 2, 3, 4
+      val step  = Stepper.kr(trig = tr, lo = 0, hi = 10)
+      val stepA = Latch.ar(step, Impulse.ar(ControlRate.ir))
+      val fr    = DC.ar(freq)
+      // first branch: true, false, true, false
+      val res   = If (step % 2) Then {
+        // first branch: true & true == true, false, true & false == false, false
+        val res1 = If (step < 2) Then {
+          Seq(SinOsc.ar(fr), DC.ar(0)): GE
+        // second branch: true & false == false, false, true & true == true, false
+        } Else {
+          Seq(SinOsc.ar(fr * stepA), DC.ar(0)): GE
+        }
+        res1 * 0.5
+      // second branch: false, true, false, true
+      } Else {
+        Seq(DC.ar(0), SinOsc.ar(fr) * 0.5): GE
+      }
+      Out.ar(0, res * 2)
+    }
+
+    val r     = render(g, numChannels = 2)
+    val len   = blockSize * 20
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0  = arr(0)
+      val arr1  = arr(1)
+      val period = blockSize * 5
+      // crazy init states of SinOsc; now we do _not_ have to delay by one sample
+      val man0  =
+        mkSine(freq = freq    , startFrame =  0, len = period) ++ mkSilent(period) ++
+        mkSine(freq = freq * 3, startFrame = -1, len = period) ++ mkSilent(period)
+      val man1  =
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
+        mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
+      // printVector(arr0)
+      assertSameSignal(arr0, man0)
+      assertSameSignal(arr1, man1)
     }
   }
 }
