@@ -31,7 +31,9 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
     Array.tabulate(len)(i => math.sin((off + i) * freqN).toFloat)
   }
 
-  final def mkSilent(len: Int): Array[Float] = new Array[Float](len)
+  final def mkConstant(value: Float, len: Int): Array[Float] = Array.fill(len)(value)
+
+  final def mkSilent(len: Int): Array[Float] = new Array(len)
 
   // ---- impl ----
 

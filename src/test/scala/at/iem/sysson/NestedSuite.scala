@@ -154,6 +154,8 @@ class NestedSuite extends SuperColliderSpec {
       val tr    = Impulse.kr(ControlRate.ir / 5)
       // it will output 1, 2, 3, 4
       val step  = Stepper.kr(trig = tr, lo = 0, hi = 10)
+      // if we leave this a k-rate, the SinOsc in the inner branch somehow
+      // picks up an init value of 2 instead of 3, interpolating weird for one control-block
       val stepA = Latch.ar(step, Impulse.ar(ControlRate.ir))
       val fr    = DC.ar(freq)
       // first branch: true, false, true, false
@@ -188,6 +190,42 @@ class NestedSuite extends SuperColliderSpec {
         mkSilent(period) ++ mkSine(freq = freq, startFrame = 0     , len = period) ++
         mkSilent(period) ++ mkSine(freq = freq, startFrame = period, len = period)
       // printVector(arr0)
+      assertSameSignal(arr0, man0)
+      assertSameSignal(arr1, man1)
+    }
+  }
+
+  "A synth graph with an If block and ThisBranch element" should "produce the predicted sound output" in {
+    val g = SynthGraph {
+      import synth._
+      import ugen._
+      val tr    = Impulse.kr(ControlRate.ir / 5)
+      val ff    = ToggleFF.kr(tr)
+      val res   = If (ff) Then {
+        val b   = ThisBranch()
+        val bA  = Latch.ar(b, Impulse.ar(ControlRate.ir))
+        Seq(bA, DC.ar(0)): GE
+      } Else {
+        val b   = ThisBranch()
+        val bA  = Latch.ar(b, Impulse.ar(ControlRate.ir))
+        Seq(DC.ar(0), bA): GE
+      }
+      Out.ar(0, res)
+    }
+
+    val r     = render(g, numChannels = 2)
+    val len   = blockSize * 20
+    r.send(len, r.node.freeMsg)
+    r.run().map { arr =>
+      val arr0    = arr(0)
+      val arr1    = arr(1)
+      val period  = blockSize * 5
+      val spike   = mkConstant(1f, blockSize) ++ mkSilent(period - blockSize)
+      val silent  = mkSilent(period)
+      val man0  = spike  ++ silent ++ spike  ++ silent
+      val man1  = silent ++ spike  ++ silent ++ spike
+      // printVector(arr0)
+      // printVector(arr1)
       assertSameSignal(arr0, man0)
       assertSameSignal(arr1, man1)
     }

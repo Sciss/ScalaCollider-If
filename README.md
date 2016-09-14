@@ -76,6 +76,42 @@ If a branch refers to UGens from the outer scope, for example the
 inserts link buses. Recursive nesting of if-then-else blocks is also
 supported.
 
+Each branch can check its state using the `ThisBranch()` graph element.
+For a non-lagging `If` block, this creates a control signal trigger
+each time the branch is activated. Because of problems in the current
+SuperCollider versions with respect to initial states of triggers, this
+signal might not work in all circumstances the first time the branch
+is activated. For example `T2A.ar(ThisBranch())` will incorrectly
+ignore the initial trigger. There are workarounds, for example using
+`Latch`, which can be seen in the test suite.
+
+Next to `If(cond) ...` there is an alternative element
+`IfLag(cond, dur) ...` which makes it possible to fade out a branch
+before it is deactivated. When `cond` becomes false, instead of pausing
+the branch immediately, a delay of `dur` happens. This also affects
+the newly selected branch, so there is no way of creating a cross-fade,
+while preserving the CPU saving property that no two branches are
+resumed at the same time. When using `IfLag`, the `ThisBranch` element
+instead of producing a single pulse trigger when the branch becomes
+active, it now provides a gate signal that remains high until the
+branch is released. Therefore, the branch can use, for example, an
+envelope generator that fades out no slower than `dur` when the
+`ThisBranch` gate signal becomes low.
+
+```scala
+val dur = 0.5  // seconds
+val res: GE = IfLag (freq > 1000, dur) Then {
+  val gate = ThisBranch()
+  val env = EnvGen.ar(Env.asr(release = dur), gate)
+  SinOsc.ar(freq) * env
+} Else {
+  val gate = ThisBranch()
+  val env = EnvGen.ar(Env.asr(release = dur), gate)
+  WhiteNoise.ar * env
+}
+Out.ar(0, res)
+```
+
 Classes are placed in the conventional `de.sciss.synth` package,
 matching with the other types and UGens of ScalaCollider.
 

@@ -18,7 +18,7 @@ import de.sciss.{osc, synth}
 import de.sciss.synth.Ops.stringToControl
 import de.sciss.synth.impl.BasicUGenGraphBuilder
 import de.sciss.synth.ugen.impl.BranchOut
-import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlProxyLike, Delay1, Done, ElseGE, ElseOrElseIfThen, IfThenLike, Impulse, In, Out, Schmidt, SetResetFF, Then, ToggleFF, Trig1, UnaryOpUGen}
+import de.sciss.synth.ugen.{BinaryOpUGen, Constant, ControlDur, ControlProxyLike, Delay1, DelayN, Done, ElseGE, ElseOrElseIfThen, IfThenLike, Impulse, In, OneZero, Out, Schmidt, SetResetFF, Then, ToggleFF, Trig1, UnaryOpUGen}
 
 import scala.annotation.{elidable, tailrec}
 import scala.collection.immutable.{IndexedSeq => Vec, Set => ISet}
@@ -465,7 +465,9 @@ object NestedUGenGraphBuilder {
 
       // Note: Delay1 does not initialize its state with zero,
       // therefore we have to add a zero frequency impulse.
-      val condChange = (Delay1.kr(condAcc) sig_!= condAcc) + Impulse.kr(0)
+//      val condChange = (Delay1.kr(condAcc) sig_!= condAcc) + Impulse.kr(0)
+      // Note: OneZero(_, 1) behaves like a correct Delay1 with zero initial state
+      val condChange = OneZero.kr(condAcc, 1) sig_!= condAcc
 
       val (selBranchSig, condAccT) = if (_hasLag) {
         import ugen._
