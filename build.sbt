@@ -1,5 +1,5 @@
 name                := "ScalaCollider-If"
-version             := "0.1.0-SNAPSHOT"
+version             := "0.1.0"
 organization        := "at.iem.sysson"
 description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs"
 homepage            := Some(url(s"https://github.com/iem-projects/${name.value}"))
