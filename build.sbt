@@ -6,7 +6,12 @@ homepage            := Some(url(s"https://github.com/iem-projects/${name.value}"
 licenses            := Seq("lgpl" -> url("https://www.gnu.org/licenses/lgpl-2.1.txt"))
 scalaVersion        := "2.11.8"
 crossScalaVersions  := Seq("2.11.8", "2.10.6")
-scalacOptions      ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xfuture", "-Xlint")
+scalacOptions      ++= {
+  val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xfuture", "-Xlint")
+  if (loggingEnabled || isSnapshot.value) xs else xs ++ Seq("-Xelide-below", "INFO")
+}
+
+lazy val loggingEnabled = false
 
 // ---- main dependencies ----
 
