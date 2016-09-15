@@ -58,7 +58,7 @@ final case class If(cond: GE) {
     val g = SynthGraph {
       res = branch
     }
-    IfThen(cond, g)(res)
+    IfThen(cond, g, res)
   }
 }
 
@@ -68,7 +68,7 @@ final case class IfLag(cond: GE, dur: GE) {
     val g = SynthGraph {
       res = branch
     }
-    IfLagThen(cond = cond, dur = dur, branch = g)(res)
+    IfLagThen(cond = cond, dur = dur, branch = g, result = res)
   }
 }
 
@@ -103,13 +103,13 @@ sealed trait IfThenLike[+A] extends IfOrElseIfThen[A] {
   def ElseIf (cond: GE): ElseIf[A] = new ElseIf(this, cond)
 }
 
-final case class IfThen[A](cond: GE, branch: SynthGraph)(val result: A)
+final case class IfThen[A](cond: GE, branch: SynthGraph, result: A)
   extends IfThenLike[A]
   with Lazy {
 
   def dur: GE = Constant.C0
 }
-final case class IfLagThen[A](cond: GE, dur: GE, branch: SynthGraph)(val result: A)
+final case class IfLagThen[A](cond: GE, dur: GE, branch: SynthGraph, result: A)
   extends IfThenLike[A]
 
 final case class ElseIf[+A](pred: IfOrElseIfThen[A], cond: GE) {
@@ -118,7 +118,7 @@ final case class ElseIf[+A](pred: IfOrElseIfThen[A], cond: GE) {
     val g = SynthGraph {
       res = branch
     }
-    ElseIfThen[B](pred, cond, g)(res)
+    ElseIfThen[B](pred, cond, g, res)
   }
 }
 
@@ -126,7 +126,7 @@ sealed trait ElseOrElseIfThen[+A] extends Then[A] {
   def pred: IfOrElseIfThen[A]
 }
 
-final case class ElseIfThen[+A](pred: IfOrElseIfThen[A], cond: GE, branch: SynthGraph)(val result: A)
+final case class ElseIfThen[+A](pred: IfOrElseIfThen[A], cond: GE, branch: SynthGraph, result: A)
   extends IfOrElseIfThen[A] with ElseOrElseIfThen[A] {
 
   def ElseIf (cond: GE): ElseIf[A] = new ElseIf(this, cond)
@@ -146,7 +146,7 @@ object Else {
       val g = SynthGraph {
         res = branch
       }
-      ElseGE(pred, g)(res)
+      ElseGE(pred, g, res)
     }
   }
 
@@ -175,7 +175,7 @@ final case class ElseUnit(pred: IfOrElseIfThen[Any], branch: SynthGraph)
   def result: Any = ()
 }
 
-final case class ElseGE(pred: IfOrElseIfThen[GE], branch: SynthGraph)(val result: GE)
+final case class ElseGE(pred: IfOrElseIfThen[GE], branch: SynthGraph, result: GE)
   extends ElseLike[GE] with GE /* .Lazy */ with AudioRated {
 
   private[synth] def expand: UGenInLike = {
