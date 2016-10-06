@@ -15,7 +15,6 @@
 package de.sciss.synth
 package ugen
 
-import de.sciss.optional.Optional
 import de.sciss.synth.GraphFunction.Result
 
 object NestedUGenOps {
@@ -33,12 +32,13 @@ object NestedUGenOps {
     * @param  target      the target with respect to which to place the synth
     * @param  addAction   the relation between the new synth and the target
     * @param  outBus      audio bus index which is used for the synthetically generated `Out` UGen.
-    * @param  fadeTime    if defined, specifies the fade-in time for a synthetically added amplitude envelope.
+    * @param  fadeTime    if zero or positive, specifies the fade-in time for a synthetically added amplitude envelope.
+    *                     If negative, no envelope will be used.
     * @param  thunk       the thunk which produces the UGens to play
     * @return             a reference to the node representing the spawned synths
     */
   def play[A](target: Node = Server.default, outBus: Int = 0,
-                                    fadeTime: Optional[Float] = Some(0.02f),
+                                    fadeTime: Double = 0.02,
                                     addAction: AddAction = addToHead)(thunk: => A)
              (implicit res: GraphFunction.Result[A]): Node = {
     val s = target.server

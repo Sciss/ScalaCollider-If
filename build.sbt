@@ -1,6 +1,6 @@
 name                := "ScalaCollider-If"
-version             := "0.1.0"
-organization        := "at.iem.sysson"
+version             := "0.2.0"
+organization        := "at.iem"
 description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs"
 homepage            := Some(url(s"https://github.com/iem-projects/${name.value}"))
 licenses            := Seq("lgpl" -> url("https://www.gnu.org/licenses/lgpl-2.1.txt"))
@@ -15,7 +15,7 @@ lazy val loggingEnabled = false
 
 // ---- main dependencies ----
 
-lazy val scalaColliderVersion = "1.20.1"
+lazy val scalaColliderVersion = "1.21.0"
 
 // ---- test dependencies ----
 
