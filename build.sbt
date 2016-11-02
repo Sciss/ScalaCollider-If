@@ -1,5 +1,5 @@
 name                := "ScalaCollider-If"
-version             := "0.2.0"
+version             := "0.3.0"
 organization        := "at.iem"
 description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs"
 homepage            := Some(url(s"https://github.com/iem-projects/${name.value}"))
@@ -15,7 +15,7 @@ lazy val loggingEnabled = false
 
 // ---- main dependencies ----
 
-lazy val scalaColliderVersion = "1.21.0"
+lazy val scalaColliderVersion = "1.22.0"
 
 // ---- test dependencies ----
 
