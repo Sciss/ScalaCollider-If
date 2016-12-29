@@ -7,7 +7,7 @@ A set of additional graph elements for [ScalaCollider](https://github.com/Sciss/
 allowing the nesting of a graph in a resource efficient manner, by pausing the inactive branches.
 This is facilitated by a new nested UGen graph builder that, unlike the standard builder, creates
 an entire tree of UGen graphs to which the conditional branches are decomposed.
-This project is (C)opyright 2016 by the Institute of Electronic Music and Acoustics (IEM), Graz.
+This project is (C)opyright 2016&ndash;2017 by the Institute of Electronic Music and Acoustics (IEM), Graz.
 Written by Hanns Holger Rutz.
 This software is published under the GNU Lesser General Public License v2.1+.
 
@@ -17,11 +17,11 @@ The following artifact is available from Maven Central:
 
     "at.iem" %% "scalacollider-if" % v
 
-The current stable version `v` is `"0.3.0"`.
+The current stable version `v` is `"0.3.1"`.
 
 ## building
 
-This project builds with sbt 0.13 and Scala 2.11, 2.10. To compile `sbt test:compile`.
+This project builds with sbt 0.13 and Scala 2.12, 2.11, 2.10. To compile `sbt test:compile`.
 To print the test output, `sbt test:run`.
 
 ## contributing

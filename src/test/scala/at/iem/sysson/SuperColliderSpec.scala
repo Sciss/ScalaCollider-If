@@ -4,11 +4,10 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 
 import de.sciss.file._
-import de.sciss.numbers
 import de.sciss.synth.io.AudioFile
-import de.sciss.synth.{NestedUGenGraphBuilder, Server, SynthGraph, addToHead}
-import de.sciss.{osc, synth}
-import org.scalatest.{AsyncFlatSpec, FutureOutcome, Matchers}
+import de.sciss.synth.{NestedUGenGraphBuilder, Node, Server, SynthGraph, addToHead}
+import de.sciss.{numbers, osc, synth}
+import org.scalatest.{Assertion, AsyncFlatSpec, FutureOutcome, Matchers}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future, blocking}
@@ -49,7 +48,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
     res
   }
 
-  final def assertSameSignal(a: Array[Float], b: Array[Float], tol: Float = 1.0e-4f) = {
+  final def assertSameSignal(a: Array[Float], b: Array[Float], tol: Float = 1.0e-4f): Assertion = {
     assert(a.length === b.length +- blockSize)
     val diff = (a, b).zipped.map((x, y) => math.abs(x - y))
     all (diff) should be < tol
@@ -68,8 +67,8 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
     val (b, n)  = NestedUGenGraphBuilder.prepare(ug, s)
 
     new Rendering {
-      var bundles = b :: osc.Bundle.now(s.defaultGroup.newMsg(s.rootNode, addToHead)) :: Nil
-      val node    = n
+      var bundles: List[osc.Bundle] = b :: osc.Bundle.now(s.defaultGroup.newMsg(s.rootNode, addToHead)) :: Nil
+      val node   : Node             = n
 
       def lastSec: Double = bundles.head.timetag.toSecs
 
@@ -80,7 +79,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
         bundles ::= osc.Bundle.secs(sec, message)
       }
 
-      import scala.concurrent.ExecutionContext.Implicits.global
+//      import scala.concurrent.ExecutionContext.Implicits.global
 
       def run(): Future[Array[Array[Float]]] = Future {
         val nrtCmdF = blocking(File.createTemp(suffix = ".osc"))
