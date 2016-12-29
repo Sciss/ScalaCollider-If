@@ -10,7 +10,7 @@ import de.sciss.{numbers, osc, synth}
 import org.scalatest.{Assertion, AsyncFlatSpec, FutureOutcome, Matchers}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, blocking}
+import scala.concurrent.{Await, ExecutionContext, Future, blocking}
 import scala.util.Try
 
 abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
@@ -79,7 +79,10 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
         bundles ::= osc.Bundle.secs(sec, message)
       }
 
-//      import scala.concurrent.ExecutionContext.Implicits.global
+      // WARNING: ScalaTest AsyncTestSuite exposes its own ExecutionContext
+      // which doesn't allow blocking and thereby causes the tests to hang.
+      // In Scala 2.12, we must shadow the implicit by using the same name.
+      implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.global
 
       def run(): Future[Array[Array[Float]]] = Future {
         val nrtCmdF = blocking(File.createTemp(suffix = ".osc"))
