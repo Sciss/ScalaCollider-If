@@ -109,13 +109,13 @@ object NestedUGenGraphBuilder {
     * and the number of channels (after the children have been expanded).
     */
   private[synth] final class ExpIfTop(val lagTime: GE, val selBranchId: Int) {
-    val hasLag      = lagTime != Constant.C0
-    var branchCount = 0
-    var branches    = List.empty[ExpIfCase]
-    var condAcc: GE = Constant.C0
+    val hasLag      : Boolean         = lagTime != Constant.C0
+    var branchCount : Int             = 0
+    var branches    : List[ExpIfCase] = Nil
+    var condAcc     : GE              = Constant.C0
 
-    var resultLinkId  = -1  // summed branch audio output will be written here
-    var numChannels   = 0   // of the result signal
+    var resultLinkId: Int             = -1  // summed branch audio output will be written here
+    var numChannels : Int             = 0   // of the result signal
   }
 
   /** Structural data for each case of an if-then-else block, i.e.
@@ -126,9 +126,8 @@ object NestedUGenGraphBuilder {
   private[synth] final class ExpIfCase(val peer: Then[Any], val pred: Option[ExpIfCase], val top: ExpIfTop,
                         val predMask: Int, val branchIdx: Int) {
     /** If true, the return signal of this branch is requested. */
-    var resultUsed = false
-
-    val thisMask = predMask | (1 << branchIdx)
+    var resultUsed: Boolean = false
+    val thisMask  : Int     = predMask | (1 << branchIdx)
   }
 
   /** The currently active builder, taking from a thread local variable. */
@@ -582,7 +581,7 @@ object NestedUGenGraphBuilder {
 
     final def outer: Outer = parent.outer
 
-    override def toString = name
+    override def toString: String = name
 
     override final def visit[U](ref: AnyRef, init: => U): U = visit1[U](ref, () => init)
 
@@ -606,11 +605,10 @@ object NestedUGenGraphBuilder {
   trait Outer extends Basic {
     builder =>
 
-    final def outer: Outer  = this
-    final def parent: Basic      = this
-    final def thisExpIfCase     = None: Option[ExpIfCase]
-
-    final def childId           = -1
+    final def outer         : Outer             = this
+    final def parent        : Basic             = this
+    final def thisExpIfCase : Option[ExpIfCase] = None
+    final def childId       : Int               = -1
 
     override def toString = "outer"
 

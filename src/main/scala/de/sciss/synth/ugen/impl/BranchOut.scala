@@ -24,7 +24,7 @@ final case class BranchOut(top: ExpIfTop, bus: GE, in: GE)
 
   protected def makeUGens: Unit = unwrap(this, bus.expand +: in.expand.outputs)
 
-  private[synth] def makeUGen(_args: Vec[UGenIn]): Unit = {
+  protected def makeUGen(_args: Vec[UGenIn]): Unit = {
     val _args1  = matchRateFrom(_args, 1, audio)
     val numCh   = _args.size - 1
     if (top.numChannels < numCh) top.numChannels = numCh
