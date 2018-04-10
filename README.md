@@ -1,7 +1,7 @@
 # ScalaCollider-If
 
-[![Build Status](https://travis-ci.org/iem-projects/ScalaCollider-If.svg?branch=master)](https://travis-ci.org/iem-projects/ScalaCollider-If)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/at.iem/scalacollider-if_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/at.iem/scalacollider-if_2.11)
+[![Build Status](https://travis-ci.org/Sciss/ScalaCollider-If.svg?branch=master)](https://travis-ci.org/Sciss/ScalaCollider-If)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.11)
 
 A set of additional graph elements for [ScalaCollider](https://github.com/Sciss/ScalaCollider),
 allowing the nesting of a graph in a resource efficient manner, by pausing the inactive branches.
@@ -16,9 +16,9 @@ This software is published under the GNU Lesser General Public License v2.1+.
 
 The following artifact is available from Maven Central:
 
-    "at.iem" %% "scalacollider-if" % v
+    "de.sciss" %% "scalacollider-if" % v
 
-The current stable version `v` is `"0.5.0"`.
+The current stable version `v` is `"0.6.0"`.
 
 ## building
 
