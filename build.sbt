@@ -1,8 +1,8 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "0.5.0"
-lazy val mimaVersion    = "0.5.0"
+lazy val projectVersion = "0.6.0-SNAPSHOT"
+lazy val mimaVersion    = "0.6.0"
 
 name                := baseName
 version             := projectVersion
@@ -23,7 +23,7 @@ lazy val loggingEnabled = false
 
 // ---- main dependencies ----
 
-lazy val scalaColliderVersion = "1.24.0"
+lazy val scalaColliderVersion = "1.25.0-SNAPSHOT"
 
 // ---- test dependencies ----
 
