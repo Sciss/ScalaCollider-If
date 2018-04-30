@@ -1,12 +1,12 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "0.7.0-SNAPSHOT"
+lazy val projectVersion = "0.7.0"
 lazy val mimaVersion    = "0.7.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "1.26.0-SNAPSHOT"
+    val scalaCollider = "1.26.0"
   }
   val test = new {
     val scalaTest     = "3.0.5"
@@ -24,8 +24,8 @@ lazy val root = project.withId(baseNameL).in(file("."))
     description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs",
     homepage            := Some(url(s"https://github.com/Sciss/${name.value}")),
     licenses            := Seq("lgpl" -> url("https://www.gnu.org/licenses/lgpl-2.1.txt")),
-    scalaVersion        := "2.12.5",
-    crossScalaVersions  := Seq("2.12.5", "2.11.12"),
+    scalaVersion        := "2.12.6",
+    crossScalaVersions  := Seq("2.12.6", "2.11.12"),
     scalacOptions      ++= {
       val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xfuture", "-Xlint")
       if (loggingEnabled || isSnapshot.value) xs else xs ++ Seq("-Xelide-below", "INFO")
