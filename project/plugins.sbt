@@ -1,1 +1,1 @@
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.1.18")  // compatibility testing
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.2.0")  // compatibility testing
