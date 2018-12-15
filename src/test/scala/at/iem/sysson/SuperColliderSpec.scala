@@ -17,7 +17,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
   // ---- abstract ----
 
   def blockSize : Int     = 64
-  def sampleRate: Double  = 44100
+  def sampleRate: Double  = 44100d
 
   // ---- utility ----
 
@@ -70,7 +70,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
       var bundles: List[osc.Bundle] = b :: osc.Bundle.now(s.defaultGroup.newMsg(s.rootNode, addToHead)) :: Nil
       val node   : Node             = n
 
-      def lastSec: Double = bundles.head.timetag.toSecs
+      def lastSec: Double = bundles.head.timeTag.toSecs
 
       def send(frame: Long, message: osc.Message): Unit = {
         val sec = frame.toDouble / sampleRate
