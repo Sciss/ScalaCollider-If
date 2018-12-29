@@ -18,7 +18,7 @@ The following artifact is available from Maven Central:
 
     "de.sciss" %% "scalacollider-if" % v
 
-The current stable version `v` is `"0.8.0"`.
+The current stable version `v` is `"0.9.0"`.
 
 ## building
 
