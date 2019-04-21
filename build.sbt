@@ -1,15 +1,15 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "0.9.0"
+lazy val projectVersion = "0.9.1"
 lazy val mimaVersion    = "0.9.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "1.28.0"
+    val scalaCollider = "1.28.2"
   }
   val test = new {
-    val scalaTest     = "3.0.5"
+    val scalaTest     = "3.0.8-RC2"
     val fileUtil      = "1.1.3"
   }
 }
@@ -24,10 +24,10 @@ lazy val root = project.withId(baseNameL).in(file("."))
     description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs",
     homepage            := Some(url(s"https://git.iem.at/sciss/${name.value}")),
     licenses            := Seq("lgpl" -> url("https://www.gnu.org/licenses/lgpl-2.1.txt")),
-    scalaVersion        := "2.13.0-M5",
-    crossScalaVersions  := Seq("2.12.8", "2.11.12", "2.13.0-M5"),
+    scalaVersion        := "2.12.8",
+    crossScalaVersions  := Seq("2.12.8", "2.11.12", "2.13.0-RC1"),
     scalacOptions      ++= {
-      val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xfuture", "-Xlint")
+      val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xlint", "-Xsource:2.13")
       if (loggingEnabled || isSnapshot.value) xs else xs ++ Seq("-Xelide-below", "INFO")
     },
     mimaPreviousArtifacts := Set(organization.value %% baseNameL % mimaVersion),
@@ -36,8 +36,7 @@ lazy val root = project.withId(baseNameL).in(file("."))
       "de.sciss"      %% "fileutil"       % deps.test.fileUtil     % Test
     ),
     libraryDependencies += {
-      val v = if (scalaVersion.value == "2.13.0-M5") "3.0.6-SNAP5" else deps.test.scalaTest
-      "org.scalatest" %% "scalatest" % v % Test
+      "org.scalatest" %% "scalatest" % deps.test.scalaTest % Test
     }
   )
   .settings(publishSettings)

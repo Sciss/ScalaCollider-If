@@ -342,6 +342,7 @@ object NestedUGenGraphBuilder {
 
     private /* [this] */ var linkMap = Map.empty[AnyRef, Link]
 
+    // XXX TODO --- do we need to repeat with parent.tryRefer in the case of `None`?
     final def tryRefer(ref: AnyRef): Option[UGenInLike] =
       sourceMap.get(ref).collect {
         case sig: UGenInLike =>

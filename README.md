@@ -8,7 +8,7 @@ allowing the nesting of a graph in a resource efficient manner, by pausing the i
 This is facilitated by a new nested UGen graph builder that, unlike the standard builder, creates
 an entire tree of UGen graphs to which the conditional branches are decomposed.
 This project is (C)opyright 2016&ndash;2017 by the Institute of Electronic Music and Acoustics (IEM), Graz.
-(C)opyright 2017&ndash;2018 Hanns Holger Rutz.
+(C)opyright 2017&ndash;2019 Hanns Holger Rutz.
 Written by Hanns Holger Rutz.
 This software is published under the GNU Lesser General Public License v2.1+.
 
@@ -18,7 +18,7 @@ The following artifact is available from Maven Central:
 
     "de.sciss" %% "scalacollider-if" % v
 
-The current stable version `v` is `"0.9.0"`.
+The current stable version `v` is `"0.9.1"`.
 
 ## building
 
