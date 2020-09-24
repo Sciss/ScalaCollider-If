@@ -1,16 +1,14 @@
 # ScalaCollider-If
 
-[![Build Status](https://travis-ci.org/Sciss/ScalaCollider-If.svg?branch=master)](https://travis-ci.org/Sciss/ScalaCollider-If)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.12)
+[![Build Status](https://travis-ci.org/Sciss/ScalaCollider-If.svg?branch=main)](https://travis-ci.org/Sciss/ScalaCollider-If)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.13)
 
 A set of additional graph elements for [ScalaCollider](https://github.com/Sciss/ScalaCollider),
 allowing the nesting of a graph in a resource efficient manner, by pausing the inactive branches.
 This is facilitated by a new nested UGen graph builder that, unlike the standard builder, creates
 an entire tree of UGen graphs to which the conditional branches are decomposed.
-This project is (C)opyright 2016&ndash;2017 by the Institute of Electronic Music and Acoustics (IEM), Graz.
-(C)opyright 2017&ndash;2019 Hanns Holger Rutz.
-Written by Hanns Holger Rutz.
-This software is published under the GNU Lesser General Public License v2.1+.
+This project is (C)opyright 2016&ndash;2020 by Hanns Holger Rutz.
+It is published under the GNU Lesser General Public License v2.1+.
 
 ## linking
 
@@ -18,7 +16,7 @@ The following artifact is available from Maven Central:
 
     "de.sciss" %% "scalacollider-if" % v
 
-The current stable version `v` is `"0.9.3"`.
+The current stable version `v` is `"1.0.0"`.
 
 ## building
 

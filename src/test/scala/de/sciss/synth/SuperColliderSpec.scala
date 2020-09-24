@@ -1,13 +1,14 @@
-package at.iem.sysson
+package de.sciss.synth
 
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 
 import de.sciss.file._
 import de.sciss.synth.io.AudioFile
-import de.sciss.synth.{NestedUGenGraphBuilder, Node, Server, SynthGraph, addToHead}
 import de.sciss.{numbers, osc, synth}
-import org.scalatest.{Assertion, AsyncFlatSpec, FutureOutcome, Matchers}
+import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{Assertion, FutureOutcome}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future, blocking}

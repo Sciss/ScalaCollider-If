@@ -2,8 +2,7 @@
  *  NestedUGenOps.scala
  *  (ScalaCollider-If)
  *
- *  Copyright (c) 2016 Institute of Electronic Music and Acoustics, Graz.
- *  Copyright (c) 2017-2018 Hanns Holger Rutz
+ *  Copyright (c) 2016-2020 Hanns Holger Rutz
  *
  *	This software is published under the GNU Lesser General Public License v2.1+
  *

@@ -1,7 +1,6 @@
-package at.iem.sysson
+package de.sciss.synth
 
 import de.sciss.synth
-import de.sciss.synth.SynthGraph
 
 /** This has been tested with SuperCollider server 3.7.0 on Linux.
   *
@@ -12,7 +11,6 @@ class NestedSuite extends SuperColliderSpec {
 
   "A synth graph with a sine oscillator" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       Out.ar(0, SinOsc.ar(freq))
     }
@@ -29,7 +27,6 @@ class NestedSuite extends SuperColliderSpec {
 
   "A synth graph with an unit result If Then" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 5)
       val ff    = ToggleFF.kr(tr)
@@ -55,7 +52,6 @@ class NestedSuite extends SuperColliderSpec {
 
   "A synth graph with an unit result If Then ElseIf Then" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 5)
       val ff    = ToggleFF.kr(tr)
@@ -86,7 +82,6 @@ class NestedSuite extends SuperColliderSpec {
 
   "A synth graph with an unit result If Then Else" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 5)
       val ff    = ToggleFF.kr(tr)
@@ -118,7 +113,6 @@ class NestedSuite extends SuperColliderSpec {
   // this actually also tests propagation of signals (`fr`) from top to children
   "A synth graph with an GE result If Then Else" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 5)
       val ff    = ToggleFF.kr(tr)
@@ -153,7 +147,6 @@ class NestedSuite extends SuperColliderSpec {
   // this actually also tests non-binary conditional signals
   "A synth graph with nested If blocks" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 5)
       // it will output 1, 2, 3, 4
@@ -201,7 +194,6 @@ class NestedSuite extends SuperColliderSpec {
 
   "A synth graph with an If block and ThisBranch element" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 5)
       val ff    = ToggleFF.kr(tr)
@@ -237,7 +229,6 @@ class NestedSuite extends SuperColliderSpec {
 
   "A synth graph with an IfLag block" should "produce the predicted sound output" in {
     val g = SynthGraph {
-      import synth._
       import ugen._
       val tr    = Impulse.kr(ControlRate.ir / 15)
       val ff    = ToggleFF.kr(tr)
