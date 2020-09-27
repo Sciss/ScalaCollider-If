@@ -275,7 +275,7 @@ object NestedUGenGraphBuilder {
     final def buildInner(g0: SynthGraph): Result = {
       var _sources: Vec[Lazy] = g0.sources
       controlProxies = g0.controlProxies
-      do {
+      while ({
         sources = Vector.empty
         val ctlProxiesCpy = controlProxies
         var i = 0
@@ -317,7 +317,10 @@ object NestedUGenGraphBuilder {
           _sources = sources
         }
 
-      } while (_sources.nonEmpty)
+        // while
+        _sources.nonEmpty
+      }) ()
+      
       val ugenGraph = build(controlProxies)
 
       ResultImpl(id = childId, graph = ugenGraph, links = _links.reverse, children = _children.reverse)

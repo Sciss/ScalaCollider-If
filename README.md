@@ -20,7 +20,8 @@ The current stable version `v` is `"1.0.0"`.
 
 ## building
 
-This project builds with sbt and Scala 2.13, 2.12, 2.11. To compile `sbt test:compile`.
+This project builds with sbt and Scala 2.13, 2.12. The last version to support Scala 2.11 was 0.9.3.
+To compile `sbt test:compile`.
 To print the test output, `sbt test:run`.
 
 ## contributing
