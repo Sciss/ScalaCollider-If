@@ -16,13 +16,14 @@ The following artifact is available from Maven Central:
 
     "de.sciss" %% "scalacollider-if" % v
 
-The current stable version `v` is `"1.0.0"`.
+The current version `v` is `"1.1.0"`.
 
 ## building
 
-This project builds with sbt and Scala 2.13, 2.12. The last version to support Scala 2.11 was 0.9.3.
-To compile `sbt test:compile`.
-To print the test output, `sbt test:run`.
+This project builds with sbt against Scala 2.13, 2.12, Dotty (JVM) and Scala 2.13 (JS).
+The last version to support Scala 2.11 was 0.9.3.
+
+To compile `sbt test:compile`. To print the test output, `sbt test:run`.
 
 ## contributing
 

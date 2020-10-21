@@ -1,12 +1,12 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "1.0.0"
-lazy val mimaVersion    = "1.0.0"
+lazy val projectVersion = "1.1.0"
+lazy val mimaVersion    = "1.1.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "2.0.0"
+    val scalaCollider = "2.1.0"
   }
   val test = new {
     val scalaTest     = "3.2.2"
@@ -16,7 +16,12 @@ lazy val deps = new {
 
 lazy val loggingEnabled = false
 
-lazy val root = project.withId(baseNameL).in(file("."))
+lazy val commonJvmSettings = Seq(
+  crossScalaVersions  := Seq("0.27.0-RC1", "2.13.3", "2.12.12"),
+)
+
+lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
+  .jvmSettings(commonJvmSettings)
   .settings(
     name                := baseName,
     version             := projectVersion,
@@ -25,19 +30,20 @@ lazy val root = project.withId(baseNameL).in(file("."))
     homepage            := Some(url(s"https://git.iem.at/sciss/${name.value}")),
     licenses            := Seq("lgpl" -> url("https://www.gnu.org/licenses/lgpl-2.1.txt")),
     scalaVersion        := "2.13.3",
-    crossScalaVersions  := Seq("0.27.0-RC1", "2.13.3", "2.12.12"),
     scalacOptions      ++= {
       val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xlint", "-Xsource:2.13")
       if (loggingEnabled || isSnapshot.value || isDotty.value) xs else xs ++ Seq("-Xelide-below", "INFO")
     },
     mimaPreviousArtifacts := Set(organization.value %% baseNameL % mimaVersion),
     libraryDependencies ++= Seq(
-      "de.sciss"      %% "scalacollider"  % deps.main.scalaCollider,
-      "de.sciss"      %% "fileutil"       % deps.test.fileUtil     % Test
+      "de.sciss"      %%% "scalacollider" % deps.main.scalaCollider,
+      "org.scalatest" %%% "scalatest"     % deps.test.scalaTest % Test,
+    )
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "de.sciss" %% "fileutil" % deps.test.fileUtil % Test,
     ),
-    libraryDependencies += {
-      "org.scalatest" %% "scalatest" % deps.test.scalaTest % Test
-    }
   )
   .settings(publishSettings)
 
