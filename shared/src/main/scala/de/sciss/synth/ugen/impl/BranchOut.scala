@@ -28,5 +28,6 @@ final case class BranchOut(top: ExpIfTop, bus: GE, in: GE)
     val numCh   = _args.size - 1
     if (top.numChannels < numCh) top.numChannels = numCh
     UGen.ZeroOut("Out", audio, _args1, isIndividual = true)
+    ()
   }
 }

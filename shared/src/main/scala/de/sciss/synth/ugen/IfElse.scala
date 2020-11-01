@@ -81,7 +81,9 @@ sealed trait Then[+A] extends Lazy {
   def result: A
 
   private[synth] final def force(b: UGenGraph.Builder): Unit = UGenGraph.builder match {
-    case nb: NestedUGenGraphBuilder => visit(nb)
+    case nb: NestedUGenGraphBuilder =>
+      visit(nb)
+      ()
     case _ => sys.error(s"Cannot expand modular IfGE outside of NestedUGenGraphBuilder")
   }
 

@@ -1,7 +1,5 @@
 package de.sciss.synth
 
-import de.sciss.synth
-
 /** This has been tested with SuperCollider server 3.7.0 on Linux.
   *
   * Not yet tested: nested `BranchIf`

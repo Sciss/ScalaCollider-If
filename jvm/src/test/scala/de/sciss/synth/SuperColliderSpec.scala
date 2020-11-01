@@ -3,8 +3,8 @@ package de.sciss.synth
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 
+import de.sciss.audiofile.AudioFile
 import de.sciss.file._
-import de.sciss.synth.io.AudioFile
 import de.sciss.{numbers, osc, synth}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
