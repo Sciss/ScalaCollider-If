@@ -9,15 +9,15 @@ lazy val deps = new {
     val scalaCollider = "2.2.0-SNAPSHOT"
   }
   val test = new {
-    val scalaTest     = "3.2.2"
-    val fileUtil      = "1.1.5"
+    val scalaTest     = "3.2.3"
+//    val fileUtil      = "1.1.5"
   }
 }
 
 lazy val loggingEnabled = false
 
 lazy val commonJvmSettings = Seq(
-  crossScalaVersions  := Seq("0.27.0-RC1", "2.13.3", "2.12.12"),
+  crossScalaVersions  := Seq("3.0.0-M1", "2.13.3", "2.12.12"),
 )
 
 lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
@@ -42,11 +42,11 @@ lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
       "org.scalatest" %%% "scalatest"     % deps.test.scalaTest % Test,
     )
   )
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-      "de.sciss" %% "fileutil" % deps.test.fileUtil % Test,
-    ),
-  )
+//  .jvmSettings(
+//    libraryDependencies ++= Seq(
+//      "de.sciss" %% "fileutil" % deps.test.fileUtil % Test,
+//    ),
+//  )
   .settings(publishSettings)
 
 // ---- publishing ----

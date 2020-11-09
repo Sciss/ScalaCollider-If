@@ -1,10 +1,9 @@
 package de.sciss.synth
 
-import java.io.RandomAccessFile
+import java.io.{File, RandomAccessFile}
 import java.nio.ByteBuffer
 
 import de.sciss.audiofile.AudioFile
-import de.sciss.file._
 import de.sciss.{numbers, osc, synth}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -86,8 +85,8 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
       implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.global
 
       def run(): Future[Array[Array[Float]]] = Future {
-        val nrtCmdF = blocking(File.createTemp(suffix = ".osc"))
-        val nrtOutF = blocking(File.createTemp(suffix = ".aif"))
+        val nrtCmdF = blocking(File.createTempFile("temp", ".osc"))
+        val nrtOutF = blocking(File.createTempFile("temp", ".aif"))
 
         blocking {
           val nrtCmdR = new RandomAccessFile(nrtCmdF, "rw")
@@ -110,8 +109,8 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
         config.blockSize          = blockSize
         config.inputBusChannels   = 0
         config.outputBusChannels  = numChannels
-        config.nrtCommandPath     = nrtCmdF.path
-        config.nrtOutputPath      = nrtOutF.path
+        config.nrtCommandPath     = nrtCmdF.getPath
+        config.nrtOutputPath      = nrtOutF.getPath
         val proc = Server.renderNRT(dur = lastSec, config = config)
         proc.start()
 
