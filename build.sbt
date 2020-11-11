@@ -1,12 +1,12 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "1.2.0-SNAPSHOT"
-lazy val mimaVersion    = "1.2.0"
+lazy val projectVersion = "1.3.0"
+lazy val mimaVersion    = "1.3.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "2.2.0-SNAPSHOT"
+    val scalaCollider = "2.2.0"
   }
   val test = new {
     val scalaTest     = "3.2.3"
@@ -28,7 +28,7 @@ lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
     organization        := "de.sciss",
     description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs",
     homepage            := Some(url(s"https://git.iem.at/sciss/${name.value}")),
-    licenses            := Seq("lgpl" -> url("https://www.gnu.org/licenses/lgpl-2.1.txt")),
+    licenses             := Seq("AGPL v3+" -> url("http://www.gnu.org/licenses/agpl-3.0.txt")),
     scalaVersion        := "2.13.3",
     scalacOptions      ++= {
       val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xlint", "-Xsource:2.13")
