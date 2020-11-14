@@ -4,6 +4,7 @@ import java.io.{File, RandomAccessFile}
 import java.nio.ByteBuffer
 
 import de.sciss.audiofile.AudioFile
+import de.sciss.audiofile.AudioFile.Frames
 import de.sciss.{numbers, osc, synth}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,21 +25,22 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
   final def printVector(arr: Array[Float]): Unit =
     println(arr.mkString("Vector(", ",", ")"))
 
-  final def mkSine(freq: Double, startFrame: Int, len: Int, sampleRate: Double = sampleRate): Array[Float] = {
+  final def mkSine(freq: Double, startFrame: Int, len: Int, sampleRate: Double = sampleRate): Array[Double] = {
     val freqN = 2 * math.Pi * freq / sampleRate
-    Array.tabulate(len)(i => math.sin((startFrame + i) * freqN).toFloat)
+    Array.tabulate(len)(i => math.sin((startFrame + i) * freqN))
   }
 
-  final def mkConstant(value: Float, len: Int): Array[Float] = Array.fill(len)(value)
+  final def mkConstant(value: Double, len: Int): Array[Double] = Array.fill(len)(value)
 
   /** If `lineLen` is zero (default), it will be set to `len`. */
-  final def mkLine(len: Int, start: Float = 0f, end: Float = 1f, startFrame: Int = 0, lineLen: Int = 0): Array[Float] = {
+  final def mkLine(len: Int, start: Double = 0.0, end: Double = 1.0, startFrame: Int = 0,
+                   lineLen: Int = 0): Array[Double] = {
     val lineLen0 = if (lineLen == 0) len else lineLen
     import numbers.Implicits._
     Array.tabulate(len)(i => (i + startFrame).clip(0, lineLen0).linLin(0, lineLen0, start, end))
   }
 
-  final def mkSilent(len: Int): Array[Float] = new Array(len)
+  final def mkSilent(len: Int): Array[Double] = new Array(len)
 
   // ---- impl ----
 
@@ -48,7 +50,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
     res
   }
 
-  final def assertSameSignal(a: Array[Float], b: Array[Float], tol: Float = 1.0e-4f): Assertion = {
+  final def assertSameSignal(a: Array[Double], b: Array[Double], tol: Double = 1.0e-4): Assertion = {
     assert(a.length === b.length +- blockSize)
     val diff = (a, b).zipped.map((x, y) => math.abs(x - y))
     all (diff) should be < tol
@@ -57,7 +59,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
   trait Rendering {
     def node: synth.Node
     def send(frame: Long, message: osc.Message): Unit
-    def run(): Future[Array[Array[Float]]]
+    def run(): Future[Frames]
   }
 
   final def render(g: SynthGraph, numChannels: Int = 1, sampleRate: Int = sampleRateI, blockSize: Int = blockSize,
@@ -84,7 +86,7 @@ abstract class SuperColliderSpec extends AsyncFlatSpec with Matchers {
       // In Scala 2.12, we must shadow the implicit by using the same name.
       implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.global
 
-      def run(): Future[Array[Array[Float]]] = Future {
+      def run(): Future[Frames] = Future {
         val nrtCmdF = blocking(File.createTempFile("temp", ".osc"))
         val nrtOutF = blocking(File.createTempFile("temp", ".aif"))
 

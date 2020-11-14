@@ -214,7 +214,7 @@ class NestedSuite extends SuperColliderSpec {
       val arr0    = arr(0)
       val arr1    = arr(1)
       val period  = blockSize * 5
-      val spike   = mkConstant(1f, blockSize) ++ mkSilent(period - blockSize)
+      val spike   = mkConstant(1.0, blockSize) ++ mkSilent(period - blockSize)
       val silent  = mkSilent(period)
       val man0  = spike  ++ silent ++ spike  ++ silent
       val man1  = silent ++ spike  ++ silent ++ spike
