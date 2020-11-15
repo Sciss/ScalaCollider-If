@@ -80,14 +80,14 @@ sealed trait Then[+A] extends Lazy {
   def branch: SynthGraph
   def result: A
 
-  private[synth] final def force(b: UGenGraph.Builder): Unit = UGenGraph.builder match {
+  private[sciss] final def force(b: UGenGraph.Builder): Unit = UGenGraph.builder match {
     case nb: NestedUGenGraphBuilder =>
       visit(nb)
       ()
     case _ => sys.error(s"Cannot expand modular IfGE outside of NestedUGenGraphBuilder")
   }
 
-  private[synth] final def visit(nb: NestedUGenGraphBuilder): NestedUGenGraphBuilder.ExpIfCase =
+  private[sciss] final def visit(nb: NestedUGenGraphBuilder): NestedUGenGraphBuilder.ExpIfCase =
     nb.visit(ref, nb.expandIfCase(this))
 }
 
@@ -177,7 +177,7 @@ final case class ElseUnit(pred: IfOrElseIfThen[Any], branch: SynthGraph)
 final case class ElseGE(pred: IfOrElseIfThen[GE], branch: SynthGraph, result: GE)
   extends ElseLike[GE] with GE /* .Lazy */ with AudioRated {
 
-  private[synth] def expand: UGenInLike = {
+  private[sciss] def expand: UGenInLike = {
     val b = UGenGraph.builder
     b.visit(ref, sys.error("Trying to expand ElseGE in same nesting level"))
   }

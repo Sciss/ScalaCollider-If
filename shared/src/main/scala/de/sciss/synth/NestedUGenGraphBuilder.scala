@@ -107,7 +107,7 @@ object NestedUGenGraphBuilder {
     * the lag time (if any), the identifier of the result bus,
     * and the number of channels (after the children have been expanded).
     */
-  private[synth] final class ExpIfTop(val lagTime: GE, val selBranchId: Int) {
+  private[sciss] final class ExpIfTop(val lagTime: GE, val selBranchId: Int) {
     val hasLag      : Boolean         = lagTime != Constant.C0
     var branchCount : Int             = 0
     var branches    : List[ExpIfCase] = Nil
@@ -122,7 +122,7 @@ object NestedUGenGraphBuilder {
     * and the top structure, a bit-mask for the sum of the preceding cases
     * and the index of this branch (counting from zero as the first case).
     */
-  private[synth] final class ExpIfCase(val peer: Then[Any], val pred: Option[ExpIfCase], val top: ExpIfTop,
+  private[sciss] final class ExpIfCase(val peer: Then[Any], val pred: Option[ExpIfCase], val top: ExpIfTop,
                         val predMask: Int, val branchIdx: Int) {
     /** If true, the return signal of this branch is requested. */
     var resultUsed: Boolean = false
@@ -175,11 +175,11 @@ object NestedUGenGraphBuilder {
   }
 
   /** Control for communicating the node index of a child, needed for pausing it from a parent node. */
-  private[synth] def pauseNodeCtlName(id: Int): String =
+  private[sciss] def pauseNodeCtlName(id: Int): String =
     s"$$if$id" // e.g. first if block third branch is `$if0_2n`
 
   /** Single control for setting the bus index of a `Link`. */
-  private[synth] def linkCtlName(id: Int): String =
+  private[sciss] def linkCtlName(id: Int): String =
     s"$$ln$id"
 
   private def isBinary(in: GE): Boolean = {
