@@ -1,12 +1,12 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "1.5.2"
-lazy val mimaVersion    = "1.5.0"
+lazy val projectVersion = "1.6.0"
+lazy val mimaVersion    = "1.6.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "2.4.1"
+    val scalaCollider = "2.5.0"
   }
   val test = new {
     val scalaTest     = "3.2.3"
@@ -35,10 +35,16 @@ lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
     licenses             := Seq("AGPL v3+" -> url("http://www.gnu.org/licenses/agpl-3.0.txt")),
     scalaVersion        := "2.13.4",
     scalacOptions      ++= {
-      val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-Xlint", "-Xsource:2.13")
+      val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
       val ys = if (loggingEnabled || isSnapshot.value || isDotty.value) xs else xs ++ Seq("-Xelide-below", "INFO")
       val sv = scalaVersion.value
       if (sv.startsWith("2.13.")) ys :+ "-Wvalue-discard" else ys
+    },
+    scalacOptions ++= {
+      if (isDotty.value) Nil else Seq("-Xlint", "-Xsource:2.13")
+    },
+    sources in (Compile, doc) := {
+      if (isDotty.value) Nil else (sources in (Compile, doc)).value // dottydoc is complaining about something
     },
     mimaPreviousArtifacts := Set(organization.value %% baseNameL % mimaVersion),
     libraryDependencies ++= Seq(

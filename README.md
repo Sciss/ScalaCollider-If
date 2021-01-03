@@ -1,13 +1,13 @@
 # ScalaCollider-If
 
-[![Build Status](https://travis-ci.org/Sciss/ScalaCollider-If.svg?branch=main)](https://travis-ci.org/Sciss/ScalaCollider-If)
+[![Build Status](https://github.com/Sciss/ScalaCollider-If/workflows/Scala%20CI/badge.svg?branch=main)](https://github.com/Sciss/ScalaCollider-If/actions?query=workflow%3A%22Scala+CI%22)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.sciss/scalacollider-if_2.13)
 
 A set of additional graph elements for [ScalaCollider](https://github.com/Sciss/ScalaCollider),
 allowing the nesting of a graph in a resource efficient manner, by pausing the inactive branches.
 This is facilitated by a new nested UGen graph builder that, unlike the standard builder, creates
 an entire tree of UGen graphs to which the conditional branches are decomposed.
-This project is (C)opyright 2016&ndash;2020 by Hanns Holger Rutz.
+This project is (C)opyright 2016&ndash;2021 by Hanns Holger Rutz.
 It is published under the GNU Affero General Public License v3+.
 
 ## linking
@@ -16,7 +16,7 @@ The following artifact is available from Maven Central:
 
     "de.sciss" %% "scalacollider-if" % v
 
-The current version `v` is `"1.5.2"`.
+The current version `v` is `"1.6.0"`.
 
 ## building
 
