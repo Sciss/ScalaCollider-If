@@ -1,16 +1,15 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "1.6.0"
-lazy val mimaVersion    = "1.6.0"
+lazy val projectVersion = "1.7.0-SNAPSHOT"
+lazy val mimaVersion    = "1.7.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "2.5.0"
+    val scalaCollider = "2.6.0-SNAPSHOT"
   }
   val test = new {
     val scalaTest     = "3.2.3"
-//    val fileUtil      = "1.1.5"
   }
 }
 
