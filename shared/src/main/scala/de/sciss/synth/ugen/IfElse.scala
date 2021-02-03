@@ -2,7 +2,7 @@
  *  IfElse.scala
  *  (ScalaCollider-If)
  *
- *  Copyright (c) 2016-2020 Hanns Holger Rutz
+ *  Copyright (c) 2016-2021 Hanns Holger Rutz
  *
  *	This software is published under the GNU Affero General Public License v3+
  *
@@ -15,6 +15,7 @@ package de.sciss.synth
 package ugen
 
 import de.sciss.synth
+import de.sciss.synth.UGenSource.{ProductReader, RefMapIn}
 
 /*
 
@@ -102,11 +103,31 @@ sealed trait IfThenLike[+A] extends IfOrElseIfThen[A] {
   def ElseIf (cond: GE): ElseIf[A] = new ElseIf(this, cond)
 }
 
+object IfThen extends ProductReader[IfThen[_]] {
+  override def read(in: RefMapIn, key: String, arity: Int): IfThen[_] = {
+    require (arity == 3)
+    val _cond   = in.readGE()
+    val _branch = in.readGraph()
+    val _result = in.readElem()
+    new IfThen(_cond, _branch, _result)
+  }
+}
 final case class IfThen[A](cond: GE, branch: SynthGraph, result: A)
   extends IfThenLike[A]
   with Lazy {
 
   def dur: GE = Constant.C0
+}
+
+object IfLagThen extends ProductReader[IfLagThen[_]] {
+  override def read(in: RefMapIn, key: String, arity: Int): IfLagThen[_] = {
+    require (arity == 4)
+    val _cond   = in.readGE()
+    val _dur    = in.readGE()
+    val _branch = in.readGraph()
+    val _result = in.readElem()
+    new IfLagThen(_cond, _dur, _branch, _result)
+  }
 }
 final case class IfLagThen[A](cond: GE, dur: GE, branch: SynthGraph, result: A)
   extends IfThenLike[A]
@@ -125,6 +146,16 @@ sealed trait ElseOrElseIfThen[+A] extends Then[A] {
   def pred: IfOrElseIfThen[A]
 }
 
+object ElseIfThen extends ProductReader[ElseIfThen[_]] {
+  override def read(in: RefMapIn, key: String, arity: Int): ElseIfThen[_] = {
+    require (arity == 4)
+    val _pred   = in.readProductT[IfOrElseIfThen[Any]]()
+    val _cond   = in.readGE()
+    val _branch = in.readGraph()
+    val _result = in.readElem()
+    new ElseIfThen(_pred, _cond, _branch, _result)
+  }
+}
 final case class ElseIfThen[+A](pred: IfOrElseIfThen[A], cond: GE, branch: SynthGraph, result: A)
   extends IfOrElseIfThen[A] with ElseOrElseIfThen[A] {
 
@@ -168,12 +199,29 @@ sealed trait ElseLike[+A] extends ElseOrElseIfThen[A] {
   def cond: GE = Constant.C1
 }
 
+object ElseUnit extends ProductReader[ElseUnit] {
+  override def read(in: RefMapIn, key: String, arity: Int): ElseUnit = {
+    require (arity == 2)
+    val _pred   = in.readProductT[IfOrElseIfThen[Any]]()
+    val _branch = in.readGraph()
+    new ElseUnit(_pred, _branch)
+  }
+}
 final case class ElseUnit(pred: IfOrElseIfThen[Any], branch: SynthGraph)
   extends ElseLike[Any] {
 
   def result: Any = ()
 }
 
+object ElseGE extends ProductReader[ElseGE] {
+  override def read(in: RefMapIn, key: String, arity: Int): ElseGE = {
+    require (arity == 3)
+    val _pred   = in.readProductT[IfOrElseIfThen[GE]]()
+    val _branch = in.readGraph()
+    val _result = in.readGE()
+    new ElseGE(_pred, _branch, _result)
+  }
+}
 final case class ElseGE(pred: IfOrElseIfThen[GE], branch: SynthGraph, result: GE)
   extends ElseLike[GE] with GE /* .Lazy */ with AudioRated {
 
@@ -183,10 +231,16 @@ final case class ElseGE(pred: IfOrElseIfThen[GE], branch: SynthGraph, result: GE
   }
 }
 
+object ThisBranch extends ProductReader[ThisBranch] {
+  override def read(in: RefMapIn, key: String, arity: Int): ThisBranch = {
+    require (arity == 0)
+    new ThisBranch
+  }
+}
 final case class ThisBranch() extends GE.Lazy with ControlRated {
   protected def makeUGens: UGenInLike =
     UGenGraph.builder match {
-      case sysson: NestedUGenGraphBuilder => sysson.thisBranch
+      case nub: NestedUGenGraphBuilder => nub.thisBranch
       case _ => sys.error("Cannot expand ThisBranch outside of NestedUGenGraphBuilder")
     }
 }

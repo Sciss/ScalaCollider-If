@@ -2,7 +2,7 @@
  *  NestedUGenOps.scala
  *  (ScalaCollider-If)
  *
- *  Copyright (c) 2016-2020 Hanns Holger Rutz
+ *  Copyright (c) 2016-2021 Hanns Holger Rutz
  *
  *	This software is published under the GNU Affero General Public License v3+
  *

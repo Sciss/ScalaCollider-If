@@ -2,7 +2,7 @@
  *  BranchOut.scala
  *  (ScalaCollider-If)
  *
- *  Copyright (c) 2016-2020 Hanns Holger Rutz
+ *  Copyright (c) 2016-2021 Hanns Holger Rutz
  *
  *	This software is published under the GNU Affero General Public License v3+
  *
@@ -18,6 +18,7 @@ package impl
 import de.sciss.synth.NestedUGenGraphBuilder.ExpIfTop
 import de.sciss.synth.UGenSource._
 
+// only used internally during expansion; does not need to be serialized
 final case class BranchOut(top: ExpIfTop, bus: GE, in: GE)
   extends UGenSource.ZeroOut with HasSideEffect with IsIndividual with AudioRated {
 

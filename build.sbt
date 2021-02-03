@@ -1,15 +1,16 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "1.7.1"
+lazy val projectVersion = "1.7.3"
 lazy val mimaVersion    = "1.7.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider = "2.6.1"
+    val scalaCollider       = "2.6.1"
+    val scalaColliderUGens  = "1.21.1"
   }
   val test = new {
-    val scalaTest     = "3.2.3"
+    val scalaTest           = "3.2.3"
   }
 }
 
@@ -47,8 +48,9 @@ lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
     },
     mimaPreviousArtifacts := Set(organization.value %% baseNameL % mimaVersion),
     libraryDependencies ++= Seq(
-      "de.sciss"      %%% "scalacollider" % deps.main.scalaCollider,
-      "org.scalatest" %%% "scalatest"     % deps.test.scalaTest % Test,
+      "de.sciss"      %%% "scalacollider"           % deps.main.scalaCollider,
+      "de.sciss"      %%% "scalacolliderugens-api"  % deps.main.scalaColliderUGens,
+      "org.scalatest" %%% "scalatest"               % deps.test.scalaTest % Test,
     )
   )
 //  .jvmSettings(
@@ -60,9 +62,9 @@ lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
 
 // ---- publishing ----
 lazy val publishSettings = Seq(
-  publishMavenStyle := true,
+  publishMavenStyle       := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
+  pomIncludeRepository    := { _ => false },
   developers := List(
     Developer(
       id    = "sciss",
