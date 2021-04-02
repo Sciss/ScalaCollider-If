@@ -10,14 +10,14 @@ lazy val deps = new {
     val scalaColliderUGens  = "1.21.1"
   }
   val test = new {
-    val scalaTest           = "3.2.4"
+    val scalaTest           = "3.2.7"
   }
 }
 
 lazy val loggingEnabled = false
 
 lazy val commonJvmSettings = Seq(
-  crossScalaVersions  := Seq("3.0.0-RC1", "2.13.4", "2.12.13"),
+  crossScalaVersions  := Seq("3.0.0-RC2", "2.13.5", "2.12.13"),
 )
 
 // sonatype plugin requires that these are in global
@@ -33,7 +33,7 @@ lazy val root = crossProject(JVMPlatform, JSPlatform).in(file("."))
     description         := "If-Then-Else blocks for ScalaCollider using nested, resource-efficient UGen graphs",
     homepage            := Some(url(s"https://git.iem.at/sciss/${name.value}")),
     licenses             := Seq("AGPL v3+" -> url("http://www.gnu.org/licenses/agpl-3.0.txt")),
-    scalaVersion        := "2.13.4",
+    scalaVersion        := "2.13.5",
     scalacOptions      ++= {
       val xs = Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
       val ys = if (loggingEnabled || isSnapshot.value || isDotty.value) xs else xs ++ Seq("-Xelide-below", "INFO")
