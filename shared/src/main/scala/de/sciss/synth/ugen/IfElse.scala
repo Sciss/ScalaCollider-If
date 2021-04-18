@@ -15,7 +15,7 @@ package de.sciss.synth
 package ugen
 
 import de.sciss.synth
-import de.sciss.synth.UGenSource.{ProductReader, RefMapIn}
+import de.sciss.synth.UGenSource.{ProductType, RefMapIn}
 
 /*
 
@@ -103,7 +103,9 @@ sealed trait IfThenLike[+A] extends IfOrElseIfThen[A] {
   def ElseIf (cond: GE): ElseIf[A] = new ElseIf(this, cond)
 }
 
-object IfThen extends ProductReader[IfThen[_]] {
+object IfThen extends ProductType[IfThen[_]] {
+  override final val typeId = 800
+
   override def read(in: RefMapIn, key: String, arity: Int): IfThen[_] = {
     require (arity == 3)
     val _cond   = in.readGE()
@@ -119,7 +121,9 @@ final case class IfThen[A](cond: GE, branch: SynthGraph, result: A)
   def dur: GE = Constant.C0
 }
 
-object IfLagThen extends ProductReader[IfLagThen[_]] {
+object IfLagThen extends ProductType[IfLagThen[_]] {
+  override final val typeId = 801
+
   override def read(in: RefMapIn, key: String, arity: Int): IfLagThen[_] = {
     require (arity == 4)
     val _cond   = in.readGE()
@@ -146,7 +150,9 @@ sealed trait ElseOrElseIfThen[+A] extends Then[A] {
   def pred: IfOrElseIfThen[A]
 }
 
-object ElseIfThen extends ProductReader[ElseIfThen[_]] {
+object ElseIfThen extends ProductType[ElseIfThen[_]] {
+  override final val typeId = 802
+
   override def read(in: RefMapIn, key: String, arity: Int): ElseIfThen[_] = {
     require (arity == 4)
     val _pred   = in.readProductT[IfOrElseIfThen[Any]]()
@@ -199,7 +205,9 @@ sealed trait ElseLike[+A] extends ElseOrElseIfThen[A] {
   def cond: GE = Constant.C1
 }
 
-object ElseUnit extends ProductReader[ElseUnit] {
+object ElseUnit extends ProductType[ElseUnit] {
+  override final val typeId = 803
+
   override def read(in: RefMapIn, key: String, arity: Int): ElseUnit = {
     require (arity == 2)
     val _pred   = in.readProductT[IfOrElseIfThen[Any]]()
@@ -213,7 +221,9 @@ final case class ElseUnit(pred: IfOrElseIfThen[Any], branch: SynthGraph)
   def result: Any = ()
 }
 
-object ElseGE extends ProductReader[ElseGE] {
+object ElseGE extends ProductType[ElseGE] {
+  override final val typeId = 804
+
   override def read(in: RefMapIn, key: String, arity: Int): ElseGE = {
     require (arity == 3)
     val _pred   = in.readProductT[IfOrElseIfThen[GE]]()
@@ -231,7 +241,9 @@ final case class ElseGE(pred: IfOrElseIfThen[GE], branch: SynthGraph, result: GE
   }
 }
 
-object ThisBranch extends ProductReader[ThisBranch] {
+object ThisBranch extends ProductType[ThisBranch] {
+  override final val typeId = 805
+
   override def read(in: RefMapIn, key: String, arity: Int): ThisBranch = {
     require (arity == 0)
     new ThisBranch
