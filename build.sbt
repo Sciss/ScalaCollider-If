@@ -1,23 +1,23 @@
 lazy val baseName  = "ScalaCollider-If"
 lazy val baseNameL = baseName.toLowerCase
 
-lazy val projectVersion = "1.7.4"
+lazy val projectVersion = "1.7.5"
 lazy val mimaVersion    = "1.7.0"
 
 lazy val deps = new {
   val main = new {
-    val scalaCollider       = "2.6.2"
+    val scalaCollider       = "2.6.3"
     val scalaColliderUGens  = "1.21.1"
   }
   val test = new {
-    val scalaTest           = "3.2.7"
+    val scalaTest           = "3.2.8"
   }
 }
 
 lazy val loggingEnabled = false
 
 lazy val commonJvmSettings = Seq(
-  crossScalaVersions  := Seq("3.0.0-RC2", "2.13.5", "2.12.13"),
+  crossScalaVersions  := Seq("3.0.0-RC3", "2.13.5", "2.12.13"),
 )
 
 // sonatype plugin requires that these are in global
